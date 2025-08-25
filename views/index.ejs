@@ -4,10 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="style.css" />
-    <title>Document</title>
+    <title>Brewing</title>
+    <script>
+      window.initialData = <%- JSON.stringify(initialData) -%>;
+    </script>
   </head>
   <body>
-    <div id="app"><%- initialContent -%></div>
+    <div id="app"><%- initialMarkup -%></div>
     <script src="main.js"></script>
   </body>
 </html>

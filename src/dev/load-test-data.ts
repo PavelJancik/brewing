@@ -1,14 +1,14 @@
-import { connect_client, stop_client } from "../server/db";
+import { connectClient, stopClient } from "../server/db";
 
 async function main() {
-  const client = await connect_client();
+  const client = await connectClient();
 
-  await client.collection("brewing").deleteMany({});
+  await client.collection("beerBatches").deleteMany({});
 
-  const resp = await client.collection("brewing").insertMany([
+  const resp = await client.collection("beerBatches").insertMany([
     {
       id: "2025-06",
-      name: " SMASH Cenntenial + Mango & Habanero",
+      name: "SMASH Cenntenial + Mango & Habanero",
     },
     {
       id: "2025-05",
@@ -18,7 +18,7 @@ async function main() {
 
   console.info("Inserted Contests:", resp.insertedCount);
 
-  stop_client();
+  stopClient();
 }
 
 main();
