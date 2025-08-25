@@ -1,21 +1,21 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, createContext, useContext } from "react";
 import Header from "./header";
 import BatchList from "./batch-list";
+import BatchDetails from "./batch-details";
+import { BatchContext } from "./batch-context";
 
 const App = ({ initialData }) => {
-  const [counter, setCounter] = useState(0);
-
-  useEffect(() => {
-    console.log("Counter updated:", counter);
-  }, [counter]);
+  const [displayedId, setDisplayedId] = useState<string | null>(null);
 
   return (
     <>
       <Header message="Hello" />
-      {counter}
-      <button onClick={() => setCounter(counter + 1)}>Increment</button>
+      {displayedId}
 
-      <BatchList initialBeerBatches={initialData.beerBatches} />
+      <BatchContext.Provider value={{ displayedId, setDisplayedId }}>
+        <BatchList initialBeerBatches={initialData.beerBatches} />
+        <BatchDetails />
+      </BatchContext.Provider>
     </>
   );
 };

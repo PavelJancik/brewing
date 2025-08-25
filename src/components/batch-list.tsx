@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Batch from "./batch";
+import BatchPreview from "./batch-preview";
 import { fetchBeerBatches } from "../api-client";
 
 const BatchList = ({ initialBeerBatches }) => {
@@ -14,7 +14,7 @@ const BatchList = ({ initialBeerBatches }) => {
   return (
     <div className="beerBatches">
       {beerBatches.map((batch) => (
-        <Batch key={batch.id} batch={batch} />
+        <BatchPreview key={batch.id} batch={batch} />
       ))}
     </div>
   );
