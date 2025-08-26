@@ -1,9 +1,9 @@
 import { useContext } from "react";
-import { BatchContext } from "./batch-context";
+import { BatchContext } from "../contexts/batch-context";
 
 type BatchProps = {
   batch: {
-    id: string;
+    slug: string;
     name: string;
   };
 };
@@ -11,14 +11,16 @@ type BatchProps = {
 const BatchPreview = ({ batch }: BatchProps) => {
   const { setDisplayedId } = useContext(BatchContext);
 
-  const showDetails = (event) => {
+  const handleClick = (event) => {
     event.preventDefault();
-    setDisplayedId(batch.id);
+    setDisplayedId(batch.slug);
+    console.log(batch.slug);
   };
 
   return (
-    <div key={batch.id} className="beerBatch" onClick={showDetails}>
+    <div key={batch.slug} className="batch" onClick={handleClick}>
       <h2>{batch.name}</h2>
+      {batch.slug}
     </div>
   );
 };

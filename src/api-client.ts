@@ -5,3 +5,8 @@ export const fetchBeerBatches = async () => {
   const resp = await axios.get(`${API_SERVER_URL}/beerBatches`);
   return resp.data.beerBatches;
 };
+
+export const fetchSingleBatch = async (batchId) => {
+  const resp = await axios.get(`${API_SERVER_URL}/batch/${batchId}`);
+  return resp.data.batch;
+};

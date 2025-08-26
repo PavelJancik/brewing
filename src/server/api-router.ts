@@ -12,7 +12,7 @@ router.get("/beerBatches", async (req, res) => {
     .find()
     .project({
       _id: 0,
-      id: 1,
+      slug: 1,
       name: 1,
     })
     .toArray();
@@ -23,7 +23,7 @@ router.get("/batch/:batchId", async (req, res) => {
   const client = await connectClient();
   const batch = await client
     .collection("beerBatches")
-    .findOne({ id: req.params.batchId });
+    .findOne({ slug: req.params.batchId });
   res.send({ batch });
 });
 

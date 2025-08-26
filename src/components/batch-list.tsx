@@ -12,9 +12,9 @@ const BatchList = ({ initialBeerBatches }) => {
   }, []);
 
   return (
-    <div className="beerBatches">
+    <div id="batches">
       {beerBatches.map((batch) => (
-        <BatchPreview key={batch.id} batch={batch} />
+        <BatchPreview key={batch.slug} batch={batch} />
       ))}
     </div>
   );
