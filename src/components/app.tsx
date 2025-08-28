@@ -1,21 +1,30 @@
-import { useState, useEffect, createContext, useContext } from "react";
-import Header from "./header";
+import { useState } from "react";
 import BatchList from "./batch-list";
 import BatchDetails from "./batch-details";
 import { BatchContext } from "../contexts/batch-context";
+import { fetchBeerBatches } from "../api-client";
 
 const App = ({ initialData }) => {
-  const [displayedId, setDisplayedId] = useState<string | null>(null);
+  const [beerBatchList, setBeerBatchList] = useState(initialData.beerBatches);
 
-  const showDetails = (id: string) => {};
+  const [displayedId, setDisplayedId] = useState<string | null>(
+    initialData.batchId,
+  );
+
+  const reloadBatchList = () => {
+    fetchBeerBatches().then((beerBatches) => {
+      setBeerBatchList(beerBatches);
+    });
+  };
 
   return (
     <>
-      <Header />
       TODO FILTERS
-      <BatchContext.Provider value={{ displayedId, setDisplayedId }}>
-        <BatchList initialBeerBatches={initialData.beerBatches} />
-        <BatchDetails />
+      <BatchContext.Provider
+        value={{ displayedId, setDisplayedId, beerBatchList, setBeerBatchList }}
+      >
+        <BatchList />
+        <BatchDetails reloadBatchList={reloadBatchList} />
       </BatchContext.Provider>
     </>
   );

@@ -20,7 +20,6 @@ const BatchPreview = ({ batch }: BatchProps) => {
   return (
     <div key={batch.slug} className="batch" onClick={handleClick}>
       <h2>{batch.name}</h2>
-      {batch.slug}
     </div>
   );
 };

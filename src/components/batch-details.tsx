@@ -1,80 +1,110 @@
 import { useContext, useEffect, useState } from "react";
 import { BatchContext } from "../contexts/batch-context";
-import { fetchSingleBatch } from "../api-client";
+import { fetchSingleBatch, updateBatch } from "../api-client";
+import { Batch } from "../types/batch";
+import slugify from "slugify";
 
-type Batch = {
-  slug: string;
-  name: string;
-  year: number;
-  month: number;
-  hops: Array<string>;
-  malts: Array<string>;
-  yeast: Array<string>;
-  others: Array<string>;
-  recipe: string;
-  igredientsShop: string;
-  IBU: number;
-  EBC: number;
-  V: number;
-  OG: number;
-  FG: number;
-  E: number;
-  EPM: number;
-  ABV: number;
-  rating: number;
-  notes: Array<string>;
-};
+const BatchDetails = ({ reloadBatchList }) => {
+  const [updateDisabled, setUpdateDisabled] = useState(false);
 
-const BatchDetails = () => {
   const { displayedId } = useContext(BatchContext);
 
-  // const [batch, setBatchDetails] = useState<Object | undefined>(undefined);
   const [batch, setBatchDetails] = useState<Batch | undefined>(undefined);
 
   useEffect(() => {
     fetchSingleBatch(displayedId).then((batch) => setBatchDetails(batch));
   }, [displayedId]);
 
+  const getSlug = (y, m, name) => {
+    const slugName = slugify(name, {
+      lower: true,
+      strict: true,
+    });
+    return `${y}-${m}-${slugName}`;
+  };
+
+  const onFormSubmit = async (event) => {
+    event.preventDefault();
+    const data = event.target;
+
+    let updatedBatchData: Batch = {
+      slug: getSlug(data.year.value, data.month.value, data.name.value),
+      name: String(data.name.value),
+      year: Number(data.year.value),
+      month: Number(data.month.value),
+      hops: String(data.hops.value)
+        .split(",")
+        .map((h) => h.trim()),
+      malts: String(data.malts.value)
+        .split(",")
+        .map((m) => m.trim()),
+      yeast: String(data.yeast.value)
+        .split(",")
+        .map((y) => y.trim()),
+      others: String(data.others.value)
+        .split(",")
+        .map((o) => o.trim()),
+      recipe: String(data.recipe.value),
+      igredientsShop: String(data.igredientsShop.value),
+      IBU: Number(data.IBU.value),
+      EBC: Number(data.EBC.value),
+      V: Number(data.V.value),
+      OG: Number(data.OG.value),
+      FG: Number(data.FG.value),
+      E: Number(data.E.value),
+      EPM: Number(data.EPM.value),
+      ABV: Number(data.ABV.value),
+      rating: Number(data.rating.value),
+      notes: String(data.notes.value)
+        .split("\n")
+        .map((n) => n.trim()),
+    };
+    const updatedBatch = await updateBatch({
+      originalBatchSlug: batch.slug,
+      updatedBatchData,
+    });
+    setBatchDetails(updatedBatch);
+    reloadBatchList();
+  };
+
+  const setBatchAttr = (e) => {
+    setBatchDetails({ ...batch, [e.target.name]: e.target.value });
+  };
+
   if (!batch) return <div>No batch selected</div>;
   else
     return (
-      <div>
-        Batch {displayedId}
-        <h3>{batch.name}</h3>
-        <h4>Date</h4>
-        {batch.year}-{batch.month}
-        <h4>Malts</h4>
-        {batch.malts}
-        <h4>Hops</h4>
-        {batch.hops}
-        <h4>Yeast</h4>
-        {batch.yeast}
-        <h4>Others</h4>
-        {batch.others}
-        <h4>Recipe</h4>
-        {batch.recipe}
-        <h4>Igredients</h4>
-        {batch.igredientsShop}
-        <h4>IBU</h4>
-        {batch.IBU}
-        <h4>EBC</h4>
-        {batch.EBC}
-        <h4>V [l]</h4>
-        {batch.V}
-        <h4>OG</h4>
-        {batch.OG}
-        <h4>FG</h4>
-        {batch.FG}
-        <h4>E [%]</h4>
-        {batch.E}
-        <h4>EPM [°P]</h4>
-        {batch.EPM}
-        <h4>ABV [%]</h4>
-        {batch.ABV}
-        <h4>Rating</h4>
-        {batch.rating}
-        <h4>Notes</h4>
-        {batch.notes}
+      <div className="">
+        Batch ID: {getSlug(batch.year, batch.month, batch.name)}
+        <div>
+          <form onSubmit={onFormSubmit}>
+            {Object.entries(batch)
+              .filter(([key]) => key !== "slug" && key !== "_id")
+              .map(([key, value]) => (
+                <div key={key} className="mt-4">
+                  <label htmlFor={key}>{key.toUpperCase()} </label>
+                  <br />
+                  <input
+                    type={typeof value === "number" ? "number" : "text"}
+                    name={key}
+                    value={Array.isArray(value) ? value.join(", ") : value}
+                    onChange={(e) => setBatchAttr(e)}
+                    disabled={updateDisabled}
+                    className="shadow-xl no-spinner"
+                  />
+                </div>
+              ))}
+
+            <button type="submit">Save Changes</button>
+          </form>
+        </div>
+        <button
+          className="bg-sky-500"
+          onClick={() => setUpdateDisabled(!updateDisabled)}
+        >
+          Edit
+        </button>
+        <br />
       </div>
     );
 };

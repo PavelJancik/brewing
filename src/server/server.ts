@@ -11,8 +11,8 @@ server.set("view engine", "ejs");
 
 server.use("/api", apiRouter);
 
-server.get("/", async (req, res) => {
-  const { initialMarkup, initialData: initialData } = await serverRender();
+server.get(["/", "/batch/:batchSlug"], async (req, res) => {
+  const { initialMarkup, initialData: initialData } = await serverRender(req);
   res.render("index", {
     initialMarkup,
     initialData,

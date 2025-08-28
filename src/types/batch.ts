@@ -1,0 +1,22 @@
+export type Batch = {
+  slug: string;
+  name: string;
+  year: number;
+  month: number;
+  hops: Array<string>;
+  malts: Array<string>;
+  yeast: Array<string>;
+  others: Array<string>;
+  recipe: string;
+  igredientsShop: string;
+  IBU: number;
+  EBC: number;
+  V: number;
+  OG: number;
+  FG: number;
+  E: number;
+  EPM: number;
+  ABV: number;
+  rating: number;
+  notes: Array<string>;
+};

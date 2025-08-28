@@ -1,19 +1,15 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import BatchPreview from "./batch-preview";
 import { fetchBeerBatches } from "../api-client";
+import { BatchContext } from "../contexts/batch-context";
+import { Batch } from "../types/batch";
 
-const BatchList = ({ initialBeerBatches }) => {
-  const [beerBatches, setBeerBatches] = useState(initialBeerBatches);
-
-  useEffect(() => {
-    // fetchBeerBatches().then((beerBatches) => {
-    //   setBeerBatches(beerBatches);
-    // });
-  }, []);
+const BatchList = () => {
+  const { beerBatchList } = useContext(BatchContext);
 
   return (
-    <div id="batches">
-      {beerBatches.map((batch) => (
+    <div id="batches" className="bg-green-500">
+      {beerBatchList.map((batch: Batch) => (
         <BatchPreview key={batch.slug} batch={batch} />
       ))}
     </div>
