@@ -41,7 +41,7 @@ async function importBatchesFromCSV(csvPath: string) {
             ? row.others.split("\n").map((o: string) => o.trim())
             : [],
           recipe: row.recipe,
-          igredientsShop: row.ingredientsShop,
+          ingredientsShop: row.ingredientsShop,
           IBU: row.IBU ? Number(row.IBU.replace(",", ".")) : undefined,
           EBC: row.EBC ? Number(row.EBC.replace(",", ".")) : undefined,
           V: row.V ? Number(row.V.replace(",", ".")) : undefined,
@@ -50,7 +50,7 @@ async function importBatchesFromCSV(csvPath: string) {
           E: row.E ? Number(row.E.replace(",", ".")) : undefined,
           EPM: row.EPM ? Number(row.EPM.replace(",", ".")) : undefined,
           ABV: row.ABV ? Number(row.ABV.replace(",", ".")) : undefined,
-          rating: row.rating,
+          rating: row.rating.match(/\*/g)?.length ?? 0,
           notes: row.notes
             ? row.notes
                 .split("\n")

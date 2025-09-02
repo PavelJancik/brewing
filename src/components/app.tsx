@@ -19,13 +19,19 @@ const App = ({ initialData }) => {
 
   return (
     <>
-      TODO FILTERS
-      <BatchContext.Provider
-        value={{ displayedId, setDisplayedId, beerBatchList, setBeerBatchList }}
-      >
-        <BatchList />
-        <BatchDetails reloadBatchList={reloadBatchList} />
-      </BatchContext.Provider>
+      <div className="flex bg-gray-100 dark:bg-gray-900 p-8">
+        <BatchContext.Provider
+          value={{
+            displayedId,
+            setDisplayedId,
+            beerBatchList,
+            setBeerBatchList,
+          }}
+        >
+          <BatchList />
+          <BatchDetails reloadBatchList={reloadBatchList} />
+        </BatchContext.Provider>
+      </div>
     </>
   );
 };

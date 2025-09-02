@@ -3,5 +3,6 @@
 npm run dev:server
 npm run dev:bundler
 docker compose up
-npx tsnd src/dev/load-test-data.ts
-npx @tailwindcss/cli -o ./dist/tailwindOutput.css --watch
+npx @tailwindcss/cli -i ./dist/tailwindInput.css -o ./dist/tailwindOutput.css --watch
+npx tsnd src/dev/load-csv-data.ts
+Number(batch.rating)

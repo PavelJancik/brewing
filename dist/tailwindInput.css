@@ -4,6 +4,27 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: "PM";
+  src: url("fonts/Permanent_Marker/PermanentMarker-Regular.ttf");
+}
+
+@font-face {
+  font-family: "PH";
+  src: url("fonts/Patrick_Hand/PatrickHand-Regular.ttf");
+}
+
+@layer components {
+  .key {
+    @apply font-bold text-gray-800 dark:text-gray-300;
+    font-family: PH;
+  }
+  .value {
+    @apply text-gray-500 dark:text-gray-400;
+    font-family: PH;
+  }
+}
+
 @layer utilities {
   /* NO SPINNER */
   /* Chrome, Safari, Edge, Opera */
@@ -15,5 +36,17 @@
   /* Firefox */
   .no-spinner[type="number"] {
     -moz-appearance: textfield;
+  }
+  /* FONTS */
+  .font-honk {
+    font-family: Honk;
+    font-size: xx-large;
+    letter-spacing: 0.5em;
+  }
+  .font-pm {
+    font-family: PM;
+  }
+  .font-ph {
+    font-family: PH;
   }
 }

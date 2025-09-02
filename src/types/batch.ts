@@ -8,7 +8,7 @@ export type Batch = {
   yeast: Array<string>;
   others: Array<string>;
   recipe: string;
-  igredientsShop: string;
+  ingredientsShop: string;
   IBU: number;
   EBC: number;
   V: number;
@@ -19,4 +19,5 @@ export type Batch = {
   ABV: number;
   rating: number;
   notes: Array<string>;
+  img?: string;
 };

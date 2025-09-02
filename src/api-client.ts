@@ -28,5 +28,21 @@ export const updateBatch = async ({ originalBatchSlug, updatedBatchData }) => {
       updatedBatchData,
     },
   );
+  console.log(`Batch updated`, resp.data.updatedBatch);
   return resp.data.updatedBatch;
+};
+
+export const uploadImage = async (slug: string, file: File) => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const res = await axios.post(
+    `${API_SERVER_URL}/updateImage/${slug}`,
+    formData,
+    {
+      headers: { "Content-Type": "multipart/form-data" },
+    },
+  );
+
+  return res.data;
 };
