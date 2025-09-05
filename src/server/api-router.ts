@@ -33,6 +33,17 @@ router.get("/batch/:batchSlug", async (req, res) => {
   res.send({ batch });
 });
 
+router.post("/addBatch", async (req, res) => {
+  const client = await connectClient();
+  const { newBatch } = req.body;
+  await client.collection("beerBatches").insertOne(newBatch);
+  const addedBatch = await client
+    .collection("beerBatches")
+    .findOne({ slug: newBatch.slug });
+
+  res.send({ addedBatch });
+});
+
 router.post("/updateBatch/:originalBatchSlug", async (req, res) => {
   const client = await connectClient();
   const { updatedBatchData } = req.body;
@@ -46,17 +57,16 @@ router.post("/updateBatch/:originalBatchSlug", async (req, res) => {
   res.send({ updatedBatch: batch });
 });
 
-router.post("/addBatch", async (req, res) => {
+router.delete("/deleteBatch/:batchSlug", async (req, res) => {
   const client = await connectClient();
-  const { newBatch } = req.body;
-  // const batch = await client
-  await client.collection("beerBatches").inserOne(newBatch);
+  const { batchSlug } = req.params;
+  console.log(`deleting ${batchSlug}`);
 
-  const batch = await client
+  const result = await client
     .collection("beerBatches")
-    .findOne({ slug: newBatch.batchSlug });
+    .deleteOne({ slug: batchSlug });
 
-  res.send({ batch });
+  res.send({ success: true, message: "Batch deleted." });
 });
 
 const upload = multer({ storage: multer.memoryStorage() }); // store file in memory

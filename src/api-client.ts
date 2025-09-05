@@ -11,7 +11,7 @@ export const fetchSingleBatch = async (batchSlug) => {
   return resp.data.batch;
 };
 
-export const addNewBatch = async ({ newBatch }) => {
+export const addNewBatch = async (newBatch) => {
   const resp = await axios.post(`${API_SERVER_URL}/addBatch`, {
     newBatch,
   });
@@ -30,6 +30,11 @@ export const updateBatch = async ({ originalBatchSlug, updatedBatchData }) => {
   );
   console.log(`Batch updated`, resp.data.updatedBatch);
   return resp.data.updatedBatch;
+};
+
+export const deleteBatch = async (slug) => {
+  const resp = await axios.delete(`${API_SERVER_URL}/deleteBatch/${slug}`);
+  return resp.data;
 };
 
 export const uploadImage = async (slug: string, file: File) => {

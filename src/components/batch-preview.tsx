@@ -1,8 +1,8 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { BatchContext } from "../contexts/batch-context";
-import { FaStar } from "react-icons/fa";
-import { FaRegStar } from "react-icons/fa";
 import { uploadImage } from "../api-client";
+import StarRating from "./star-rating";
+import { FaRegImage } from "react-icons/fa";
 
 type BatchProps = {
   batch: {
@@ -17,6 +17,7 @@ type BatchProps = {
 
 const BatchPreview = ({ batch }: BatchProps) => {
   const { setDisplayedId } = useContext(BatchContext);
+  const [img, setImg] = useState(batch.img);
 
   const handleClick = (event) => {
     event.preventDefault();
@@ -30,37 +31,47 @@ const BatchPreview = ({ batch }: BatchProps) => {
 
     const result = await uploadImage(batch.slug, file);
     setDisplayedId(result.batch.slug);
+    setImg(result.batch.img);
   };
 
   return (
     <div>
-      <input type="file" onChange={handleFileSelect} className="mt-4" />
       <div
         key={batch.slug}
         onClick={handleClick}
-        className="my-8 rounded shadow-lg shadow-gray-200 dark:shadow-gray-900 bg-white dark:bg-gray-800 duration-300 hover:-translate-y-1 cursor-pointer"
+        className="relative mb-4 rounded shadow-lg shadow-gray-200 dark:shadow-gray-900
+        bg-white dark:bg-gray-800 duration-300 hover:-translate-y-1 cursor-pointer"
       >
         <figure>
+          <label
+            htmlFor={`file-upload-${batch.slug}`}
+            className="text-white absolute top-0 right-0 z-10 px-3 py-2 m-1 
+            cursor-pointer transform transition-transform duration-100 hover:scale-140 
+            opacity-50 hover:opacity-100"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <FaRegImage className="" />
+            <input
+              id={`file-upload-${batch.slug}`}
+              type="file"
+              className="hidden"
+              onChange={handleFileSelect}
+            />
+          </label>
           <img
-            src={`data:image/*;base64,${batch.img}`}
-            // src="/path.png"
+            src={img ? `data:image/*;base64,${img}` : "/default.jpg"}
             className="rounded-t h-72 w-full object-cover relative"
           />
 
           <figcaption className="p-4 font-ph">
-            <p className="font-pm mb-2 leading-relaxed key">{batch.name}</p>
+            <p className="font-pm mb-2 leading-relaxed key truncate">
+              {batch.name}
+            </p>
 
             <small className="leading-5 value">
-              <span className="flex">
-                {Array.from({ length: 5 }).map((_, i) =>
-                  i < Number(batch.rating) ? (
-                    <FaStar key={i} />
-                  ) : (
-                    <FaRegStar key={i} />
-                  ),
-                )}
-              </span>
-              IBU {String(batch.IBU)} • ABV {String(batch.ABV)}
+              <StarRating rating={batch.rating} />
+              {batch.IBU >= 0 ? `IBU ${String(batch.IBU)}` : ""}
+              {batch.ABV >= 0 ? ` • ABV ${String(batch.ABV)}` : ""}
             </small>
           </figcaption>
         </figure>

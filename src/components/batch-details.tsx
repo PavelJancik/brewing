@@ -1,23 +1,24 @@
 import { useContext, useEffect, useState } from "react";
 import { BatchContext } from "../contexts/batch-context";
-import { fetchSingleBatch, updateBatch } from "../api-client";
+import { numericConstraints } from "../constants/batchConstraints";
 import { Batch } from "../types/batch";
+import StarRating from "./star-rating";
 import slugify from "slugify";
-
-import { FaPencilAlt } from "react-icons/fa";
-import { FaCheck } from "react-icons/fa";
-import { FaRegTrashAlt } from "react-icons/fa";
-import { FaPlus } from "react-icons/fa";
+// prettier-ignore
+import { fetchSingleBatch, addNewBatch, updateBatch, deleteBatch } from "../api-client";
+// prettier-ignore
+import { FaPencilAlt, FaCheck, FaRegTrashAlt, FaPlus} from "react-icons/fa";
 
 const BatchDetails = ({ reloadBatchList }) => {
-  const [updateDisabled, setUpdateDisabled] = useState(false);
-
-  const { displayedId } = useContext(BatchContext);
-
+  const [updateDisabled, setUpdateDisabled] = useState(true);
+  const [fomrAction, setFormAction] = useState(null);
   const [batch, setBatchDetails] = useState<Batch | undefined>(undefined);
+  const { displayedId } = useContext(BatchContext);
 
   useEffect(() => {
     fetchSingleBatch(displayedId).then((batch) => setBatchDetails(batch));
+    setFormAction("update");
+    setUpdateDisabled(true);
   }, [displayedId]);
 
   const getSlug = (y, m, name) => {
@@ -28,10 +29,35 @@ const BatchDetails = ({ reloadBatchList }) => {
     return `${y}-${m}-${slugName}`;
   };
 
+  const setBatchAttr = (e) => {
+    setBatchDetails({ ...batch, [e.target.name]: e.target.value });
+  };
+
+  const handleDeleteButtonClick = async () => {
+    if (confirm(`Delete batch ${batch.name}?`) == true) {
+      const resp = await deleteBatch(displayedId);
+      console.log(resp);
+      setBatchDetails(undefined);
+      reloadBatchList();
+    } else {
+      console.log("Canceled");
+    }
+  };
+
+  const handleAddButtonClick = () => {
+    showEmptyForm();
+    setFormAction("new");
+    setUpdateDisabled(false);
+  };
+
+  const handleDiscardClick = () => {
+    fetchSingleBatch(displayedId).then((batch) => setBatchDetails(batch));
+    setUpdateDisabled(true);
+  };
+
   const onFormSubmit = async (event) => {
     event.preventDefault();
     const data = event.target;
-
     let updatedBatchData: Batch = {
       slug: getSlug(data.year.value, data.month.value, data.name.value),
       name: String(data.name.value),
@@ -51,184 +77,232 @@ const BatchDetails = ({ reloadBatchList }) => {
         .map((o) => o.trim()),
       recipe: String(data.recipe.value),
       ingredientsShop: String(data.ingredientsShop.value),
-      IBU: Number(data.IBU.value),
-      EBC: Number(data.EBC.value),
-      V: Number(data.V.value),
-      OG: Number(data.OG.value),
-      FG: Number(data.FG.value),
-      E: Number(data.E.value),
-      EPM: Number(data.EPM.value),
-      ABV: Number(data.ABV.value),
-      rating: Number(data.rating.value),
+      IBU: data.IBU.value ? Number(data.IBU.value) : -1,
+      EBC: data.EBC.value ? Number(data.EBC.value) : -1,
+      V: data.V.value ? Number(data.V.value) : -1,
+      OG: data.OG.value ? Number(data.OG.value) : -1,
+      FG: data.FG.value ? Number(data.FG.value) : -1,
+      E: data.E.value ? Number(data.E.value) : -1,
+      EPM: data.EPM.value ? Number(data.EPM.value) : -1,
+      ABV: data.ABV.value ? Number(data.ABV.value) : -1,
+      rating: data.rating.value ? Number(data.rating.value) : 0,
       notes: String(data.notes.value)
         .split("\n")
         .map((n) => n.trim()),
     };
-    const updatedBatch = await updateBatch({
-      originalBatchSlug: batch.slug,
-      updatedBatchData,
-    });
-    setBatchDetails(updatedBatch);
+    if (fomrAction == "update") {
+      const updatedBatch = await updateBatch({
+        originalBatchSlug: batch.slug,
+        updatedBatchData,
+      });
+      setBatchDetails(updatedBatch);
+    }
+    if (fomrAction == "new") {
+      const createdBatch = await addNewBatch(updatedBatchData);
+      setBatchDetails(createdBatch);
+    }
     reloadBatchList();
+    setUpdateDisabled(true);
   };
 
-  const setBatchAttr = (e) => {
-    setBatchDetails({ ...batch, [e.target.name]: e.target.value });
+  const showEmptyForm = () => {
+    const newBatch = {
+      slug: "",
+      name: "",
+      year: new Date().getFullYear(),
+      month: new Date().getMonth() + 1,
+      hops: [""],
+      malts: [""],
+      yeast: [""],
+      others: [""],
+      recipe: "",
+      ingredientsShop: "",
+      IBU: -1,
+      EBC: -1,
+      V: -1,
+      OG: -1,
+      FG: -1,
+      E: -1,
+      EPM: -1,
+      ABV: -1,
+      rating: -1,
+      notes: [""],
+    };
+    setBatchDetails(newBatch);
   };
 
-  // do not change key names, as they are used as name attributes in inputs
-  const ingredients = {
-    malts: batch?.malts,
-    hops: batch?.hops,
-    yeast: batch?.yeast,
-    others: batch?.others,
-    ingredientsShop: batch?.ingredientsShop,
-    recipe: batch?.recipe,
-  };
-  const stats = {
-    year: batch?.year,
-    month: batch?.month,
-    ABV: batch?.ABV,
-    IBU: batch?.IBU,
-    EBC: batch?.EBC,
-    V: batch?.V,
-    OG: batch?.OG,
-    FG: batch?.FG,
-    EPM: batch?.EPM,
-    E: batch?.E,
+  // prettier-ignore
+  const ingredients: (keyof Batch)[] = 
+    ["malts", "hops", "yeast", "others", "ingredientsShop", "recipe"];
+  const renderIngredients = () => {
+    return ingredients.map((key) => (
+      <div key={key} className="mt-2 w-full font-ph">
+        <label htmlFor={key} className="w-full key">
+          {key == "ingredientsShop"
+            ? "ingredients Shop".toUpperCase()
+            : key.toUpperCase()}
+        </label>
+        <br />
+        <input
+          type="text"
+          name={key}
+          value={
+            Array.isArray(batch[key])
+              ? batch[key].join(", ")
+              : (batch[key] ?? "")
+          }
+          onChange={(e) => setBatchAttr(e)}
+          disabled={updateDisabled}
+          placeholder="None"
+          className={`w-full truncate value ${!updateDisabled ? "editable" : null}`}
+        />
+      </div>
+    ));
   };
 
-  let batchDetailsHTML = <div className="font-ph">No Batch selected</div>;
-  if (batch) {
-    batchDetailsHTML = (
+  // prettier-ignore
+  const stats: (keyof Batch)[] = 
+    ["year", "month", "ABV", "IBU", "EBC", "V", "OG", "FG", "EPM", "E", "rating"];
+  const renderStats = () => {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
+        {stats.map((key) => {
+          const constraints =
+            numericConstraints[key as keyof typeof numericConstraints] ?? {};
+
+          return (
+            <div key={key} className="mt-2 w-full flex justify-end font-ph key">
+              <label htmlFor={key} className="w-[40%]">
+                {key.toUpperCase()}
+              </label>
+              <input
+                type="number"
+                name={key}
+                value={batch[key] == -1 ? "" : batch[key]}
+                onChange={(e) => setBatchAttr(e)}
+                disabled={updateDisabled}
+                placeholder="-"
+                className={`no-spinner w-[60%] value ${!updateDisabled ? "editable" : null}`}
+                min={constraints.min}
+                max={constraints.max}
+                step={constraints.step}
+              />
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderNotes = () => {
+    return (
+      <div className="mt-2 w-full font-ph ">
+        <label htmlFor="notes" className="w-full key">
+          {"Notes".toUpperCase()}
+        </label>
+        <br />
+        <textarea
+          name="notes"
+          value={batch.notes}
+          onChange={(e) => setBatchAttr(e)}
+          disabled={updateDisabled}
+          className={`w-full value resize-none ${!updateDisabled ? "editable" : null}`}
+        ></textarea>
+      </div>
+    );
+  };
+
+  const renderButtons = () => {
+    return (
+      <div id="buttons" className="flex justify-between items-center w-full">
+        <div className="flex gap-4 flex pb-4">
+          <button
+            title="Save changes"
+            type="submit"
+            form="batch-form"
+            className="btn bg-emerald-700 disabled:bg-slate-500"
+            disabled={updateDisabled}
+          >
+            <FaCheck className="w-5 h-5" />
+          </button>
+          <button
+            title="Discard changes"
+            className="btn bg-red-900 disabled:bg-slate-500"
+            onClick={handleDiscardClick}
+            disabled={updateDisabled}
+          >
+            <FaPlus className="w-5 h-5 rotate-45" />
+          </button>
+        </div>
+        <div className="flex gap-4 flex pb-4">
+          <button
+            title="Add new batch"
+            className="btn bg-emerald-700 disabled:bg-slate-500"
+            onClick={handleAddButtonClick}
+            disabled={!updateDisabled}
+          >
+            <FaPlus className="w-5 h-5" />
+          </button>
+          <button
+            title="Update batch"
+            className="btn bg-cyan-700 disabled:bg-slate-500"
+            onClick={() => setUpdateDisabled(!updateDisabled)}
+            disabled={!updateDisabled || !batch}
+          >
+            <FaPencilAlt className="w-5 h-5" />
+          </button>
+          <button
+            title="Delete batch"
+            className="btn bg-red-900 disabled:bg-slate-500"
+            onClick={handleDeleteButtonClick}
+            disabled={!batch}
+          >
+            <FaRegTrashAlt className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  const renderBatch = () => {
+    return (
       <div>
         <span className="font-ph">
           Batch {getSlug(batch.year, batch.month, batch.name)}
         </span>
-        <div id="buttons">
-          <div className="flex gap-4 flex justify-end pb-4">
-            {/* ADD */}
-            <button className="w-10 h-10 flex items-center justify-center bg-emerald-700 text-white rounded-lg cursor-pointer transition transform duration-300 hover:scale-110">
-              <FaPlus className="w-5 h-5" />
-            </button>
-            {/* UPDATE */}
-            <button
-              className="w-10 h-10 flex items-center justify-center bg-cyan-700 text-white rounded-lg cursor-pointer transition transform duration-300 hover:scale-110"
-              onClick={() => setUpdateDisabled(!updateDisabled)}
-            >
-              <FaPencilAlt className="w-5 h-5" />
-            </button>
-            {/* DELETE */}
-            <button className="w-10 h-10 flex items-center justify-center bg-red-900 text-white rounded-lg cursor-pointer transition transform duration-300 hover:scale-110">
-              <FaRegTrashAlt className="w-5 h-5" />
-            </button>
+        <StarRating rating={batch.rating} />
+        <form onSubmit={onFormSubmit} id="batch-form" className="gap-4">
+          <div className="justify-end pb-4">
+            <input
+              className={`font-pm text-3xl w-full resize-none overflow-hidden 
+                ${!updateDisabled ? "editableColorful" : null}`}
+              name="name"
+              value={batch.name}
+              onChange={(e) => setBatchAttr(e)}
+              disabled={updateDisabled}
+            ></input>
           </div>
-
-          <form onSubmit={onFormSubmit} className="gap-4 ">
-            {/* SAVE */}
-            <div className="justify-end pb-4">
-              <input
-                className="font-pm text-3xl w-[85%] resize-none overflow-hidden "
-                name="name"
-                value={batch.name}
-                onChange={(e) => setBatchAttr(e)}
-                disabled={updateDisabled}
-              ></input>
-              <button
-                type="submit"
-                className="w-10 h-10 flex items-center justify-center bg-emerald-700 text-white rounded-lg cursor-pointer transition transform duration-300 hover:scale-110
-                float-right"
-              >
-                <FaCheck className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* <img
-              src="/test_img.jpg"
-              className="rounded h-50 object-cover w-full sm:w-[50%] sm:float-right"
-            /> */}
-            {Object.entries(ingredients).map(([key, value]) => (
-              <div key={key} className="mt-2 w-full font-ph">
-                <label htmlFor={key} className="w-full key">
-                  {key == "ingredientsShop"
-                    ? "ingredients Shop".toUpperCase()
-                    : key.toUpperCase()}
-                </label>
-                <br />
-                <input
-                  type={typeof value === "number" ? "number" : "text"}
-                  name={key}
-                  value={
-                    Array.isArray(value) ? value.join(", ") : (value ?? "")
-                  }
-                  onChange={(e) => setBatchAttr(e)}
-                  disabled={updateDisabled}
-                  placeholder="None"
-                  className="shadow-xl no-spinner w-full truncate value"
-                />
-              </div>
-            ))}
-            {Object.entries(stats).map(([key, value]) => (
-              <div
-                key={key}
-                className="mt-2 w-full sm:w-[50%] sm:float-left
-                flex justify-end font-ph key"
-              >
-                <label htmlFor={key} className="w-[25%]">
-                  {key.toUpperCase()}
-                </label>
-                <input
-                  type={typeof value === "number" ? "number" : "text"}
-                  name={key}
-                  value={
-                    Array.isArray(value) ? value.join(", ") : (value ?? "")
-                  }
-                  onChange={(e) => setBatchAttr(e)}
-                  disabled={updateDisabled}
-                  placeholder="-"
-                  className="shadow-xl no-spinner w-[75%] value"
-                />
-              </div>
-            ))}
-
-            <div className="mt-2 w-full font-ph">
-              <label htmlFor="rating" className="w-full key">
-                {"Rating".toUpperCase()}
-              </label>
-              <input
-                type="number"
-                name="rating"
-                value={batch.rating}
-                onChange={(e) => setBatchAttr(e)}
-                disabled={updateDisabled}
-                className="shadow-xl no-spinner w-full value"
-              />
-              <label htmlFor="notes" className="w-full key">
-                {"Notes".toUpperCase()}
-              </label>
-              <br />
-              <textarea
-                name="notes"
-                value={batch.notes}
-                onChange={(e) => setBatchAttr(e)}
-                disabled={updateDisabled}
-                className="shadow-xl no-spinner w-full value"
-              ></textarea>
-            </div>
-          </form>
-        </div>
+          {renderIngredients()}
+          {renderStats()}
+          {renderNotes()}
+        </form>
       </div>
     );
-  }
+  };
 
   return (
     <div
       id="batch-details"
-      className="w-[100%] h-[100%] md:w-[32%] md:h-[90%] overflow-auto md:m-8 p-4 text-white fixed top-0 right-0
-     rounded-xl shadow-lg shadow-gray-200 dark:shadow-gray-900 bg-white dark:bg-gray-800
-     "
+      className="z-20 w-[100%] h-[100%] lg:w-[35.5vw] lg:h-[90%] lg:m-8 p-4 overflow-auto
+       text-white fixed top-0 right-0 rounded-xl bg-cover bg-center bg-no-repeat"
+      style={{
+        backgroundImage: `url("${batch?.img ? `data:image/*;base64,${batch.img}` : "default.jpg"}")`,
+        backgroundColor: `rgb(50,50,50)`,
+        backgroundBlendMode: "multiply",
+      }}
     >
-      {batchDetailsHTML}
+      {renderButtons()}
+      {batch ? renderBatch() : <div className="font-ph">No Batch selected</div>}
     </div>
   );
 };
