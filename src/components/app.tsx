@@ -1,6 +1,7 @@
 import { useState } from "react";
 import BatchList from "./batch-list";
 import BatchDetails from "./batch-details";
+import FilterMenu from "./filter-menu";
 import { BatchContext } from "../contexts/batch-context";
 import { fetchBeerBatches } from "../api-client";
 
@@ -28,6 +29,7 @@ const App = ({ initialData }) => {
             setBeerBatchList,
           }}
         >
+          <FilterMenu />
           <BatchList />
           <BatchDetails reloadBatchList={reloadBatchList} />
         </BatchContext.Provider>

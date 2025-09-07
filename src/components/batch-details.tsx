@@ -11,7 +11,7 @@ import { FaPencilAlt, FaCheck, FaRegTrashAlt, FaPlus} from "react-icons/fa";
 
 const BatchDetails = ({ reloadBatchList }) => {
   const [updateDisabled, setUpdateDisabled] = useState(true);
-  const [fomrAction, setFormAction] = useState(null);
+  const [formAction, setFormAction] = useState(null);
   const [batch, setBatchDetails] = useState<Batch | undefined>(undefined);
   const { displayedId } = useContext(BatchContext);
 
@@ -34,7 +34,9 @@ const BatchDetails = ({ reloadBatchList }) => {
   };
 
   const handleDeleteButtonClick = async () => {
-    if (confirm(`Delete batch ${batch.name}?`) == true) {
+    if (
+      confirm(`Are you sure, you want to delete batch - ${batch.name}?`) == true
+    ) {
       const resp = await deleteBatch(displayedId);
       console.log(resp);
       setBatchDetails(undefined);
@@ -86,18 +88,16 @@ const BatchDetails = ({ reloadBatchList }) => {
       EPM: data.EPM.value ? Number(data.EPM.value) : -1,
       ABV: data.ABV.value ? Number(data.ABV.value) : -1,
       rating: data.rating.value ? Number(data.rating.value) : 0,
-      notes: String(data.notes.value)
-        .split("\n")
-        .map((n) => n.trim()),
+      notes: batch.notes.filter((str) => str.trim() !== ""),
     };
-    if (fomrAction == "update") {
+    if (formAction == "update") {
       const updatedBatch = await updateBatch({
         originalBatchSlug: batch.slug,
         updatedBatchData,
       });
       setBatchDetails(updatedBatch);
     }
-    if (fomrAction == "new") {
+    if (formAction == "new") {
       const createdBatch = await addNewBatch(updatedBatchData);
       setBatchDetails(createdBatch);
     }
@@ -135,29 +135,33 @@ const BatchDetails = ({ reloadBatchList }) => {
   const ingredients: (keyof Batch)[] = 
     ["malts", "hops", "yeast", "others", "ingredientsShop", "recipe"];
   const renderIngredients = () => {
-    return ingredients.map((key) => (
-      <div key={key} className="mt-2 w-full font-ph">
-        <label htmlFor={key} className="w-full key">
-          {key == "ingredientsShop"
-            ? "ingredients Shop".toUpperCase()
-            : key.toUpperCase()}
-        </label>
-        <br />
-        <input
-          type="text"
-          name={key}
-          value={
-            Array.isArray(batch[key])
-              ? batch[key].join(", ")
-              : (batch[key] ?? "")
-          }
-          onChange={(e) => setBatchAttr(e)}
-          disabled={updateDisabled}
-          placeholder="None"
-          className={`w-full truncate value ${!updateDisabled ? "editable" : null}`}
-        />
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
+        {ingredients.map((key) => (
+          <div key={key} className="mt-2 w-full font-ph">
+            <label htmlFor={key} className="w-full key">
+              {key == "ingredientsShop"
+                ? "ingredients Shop".toUpperCase()
+                : key.toUpperCase()}
+            </label>
+            <br />
+            <input
+              type="text"
+              name={key}
+              value={
+                Array.isArray(batch[key])
+                  ? batch[key].join(", ")
+                  : (batch[key] ?? "")
+              }
+              onChange={(e) => setBatchAttr(e)}
+              disabled={updateDisabled}
+              placeholder="None"
+              className={`w-full truncate value ${!updateDisabled ? "editable" : null}`}
+            />
+          </div>
+        ))}
       </div>
-    ));
+    );
   };
 
   // prettier-ignore
@@ -171,8 +175,8 @@ const BatchDetails = ({ reloadBatchList }) => {
             numericConstraints[key as keyof typeof numericConstraints] ?? {};
 
           return (
-            <div key={key} className="mt-2 w-full flex justify-end font-ph key">
-              <label htmlFor={key} className="w-[40%]">
+            <div key={key} className="w-full flex justify-end font-ph key">
+              <label htmlFor={key} className="w-[30%]">
                 {key.toUpperCase()}
               </label>
               <input
@@ -182,7 +186,7 @@ const BatchDetails = ({ reloadBatchList }) => {
                 onChange={(e) => setBatchAttr(e)}
                 disabled={updateDisabled}
                 placeholder="-"
-                className={`no-spinner w-[60%] value ${!updateDisabled ? "editable" : null}`}
+                className={`no-spinner w-[70%] value ${!updateDisabled ? "editable" : null}`}
                 min={constraints.min}
                 max={constraints.max}
                 step={constraints.step}
@@ -197,17 +201,44 @@ const BatchDetails = ({ reloadBatchList }) => {
   const renderNotes = () => {
     return (
       <div className="mt-2 w-full font-ph ">
-        <label htmlFor="notes" className="w-full key">
+        <label htmlFor="notes" className="key">
           {"Notes".toUpperCase()}
         </label>
-        <br />
-        <textarea
-          name="notes"
-          value={batch.notes}
-          onChange={(e) => setBatchAttr(e)}
+        <button
+          title="Add note"
+          className="cursor-pointer px-2 m-2 font-bold text-emerald-700
+            transform transition-transform duration-100 hover:scale-140
+            disabled:text-slate-500 disabled:cursor-not-allowed"
+          onClick={(e) => {
+            e.preventDefault();
+            setBatchDetails((prev) => ({
+              ...prev,
+              notes: [...prev.notes, ""],
+            }));
+          }}
           disabled={updateDisabled}
-          className={`w-full value resize-none ${!updateDisabled ? "editable" : null}`}
-        ></textarea>
+        >
+          +
+        </button>
+        {batch.notes.map((note, index) => (
+          <div key={index}>
+            <span className="text-gray-500 dark:text-gray-400">• </span>
+            <input
+              title="Leve the line empty to delete it"
+              type="text"
+              name={`note-${index}`}
+              value={note}
+              onChange={(e) => {
+                const updatedNotes = [...batch.notes];
+                updatedNotes[index] = e.target.value;
+                setBatchDetails({ ...batch, notes: updatedNotes });
+              }}
+              className={`w-[95%] truncate value ${!updateDisabled ? "editable" : null}`}
+              disabled={updateDisabled}
+              // maxLength={80}
+            />
+          </div>
+        ))}
       </div>
     );
   };
@@ -283,7 +314,9 @@ const BatchDetails = ({ reloadBatchList }) => {
             ></input>
           </div>
           {renderIngredients()}
+          <hr className="my-2 border-white/20" />
           {renderStats()}
+          <hr className="my-2 border-white/20" />
           {renderNotes()}
         </form>
       </div>
@@ -294,7 +327,8 @@ const BatchDetails = ({ reloadBatchList }) => {
     <div
       id="batch-details"
       className="z-20 w-[100%] h-[100%] lg:w-[35.5vw] lg:h-[90%] lg:m-8 p-4 overflow-auto
-       text-white fixed top-0 right-0 rounded-xl bg-cover bg-center bg-no-repeat"
+       text-white fixed top-0 right-0 rounded-xl bg-cover bg-center bg-no-repeat 
+       shadow-[0px_0px_5px_#444] "
       style={{
         backgroundImage: `url("${batch?.img ? `data:image/*;base64,${batch.img}` : "default.jpg"}")`,
         backgroundColor: `rgb(50,50,50)`,
