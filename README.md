@@ -1,8 +1,21 @@
-# In Development
+# 🍺 Beer Batch Manager
 
-npm run dev:server
-npm run dev:bundler
-docker compose up
-npx @tailwindcss/cli -i ./dist/tailwindInput.css -o ./dist/tailwindOutput.css --watch
-npx tsnd src/dev/load-csv-data.ts
-Number(batch.rating)
+<p align="center">
+   <img src="/screenshot.png" alt="Brewing"/>
+</p>
+
+A REST API for managing homebrewing beer batches.  
+Built with **React (TypeScript)**, **Express.js**, **Node.js**, **MongoDB**, and **TailwindCSS**.
+
+## ✨ Features
+
+- 📋 Add, edit, delete and view beer batches
+- 📊 Store brewing stats (ABV, IBU, OG, FG, EBC, etc.)
+- 📝 Write notes
+- 🌿 Manage ingredients (malts, hops, yeast, others)
+- ⭐ Rate batches (0–5 stars)
+- 🖼️ Upload and display images
+
+## License
+
+See [LICENSE.md](LICENSE.md) for details.
