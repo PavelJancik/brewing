@@ -13,7 +13,8 @@ const BatchDetails = ({ reloadBatchList }) => {
   const [updateDisabled, setUpdateDisabled] = useState(true);
   const [formAction, setFormAction] = useState(null);
   const [batch, setBatchDetails] = useState<Batch | undefined>(undefined);
-  const { displayedId, setDisplayedId } = useContext(BatchContext);
+  const { displayedId, setDisplayedId, beerBatchList } =
+    useContext(BatchContext);
 
   useEffect(() => {
     setBatchDetails(null);
@@ -61,8 +62,15 @@ const BatchDetails = ({ reloadBatchList }) => {
   const onFormSubmit = async (event) => {
     event.preventDefault();
     const data = event.target;
+    const newSlug = getSlug(data.year.value, data.month.value, data.name.value);
+    if (beerBatchList.some((batch: Batch) => batch.slug == newSlug)) {
+      alert(
+        "Batch with this ID aready exists, please change Name, year or month to create unique ID.",
+      );
+      return false;
+    }
     let updatedBatchData: Batch = {
-      slug: getSlug(data.year.value, data.month.value, data.name.value),
+      slug: newSlug,
       name: String(data.name.value),
       year: Number(data.year.value),
       month: Number(data.month.value),
@@ -85,7 +93,7 @@ const BatchDetails = ({ reloadBatchList }) => {
       V: data.V.value ? Number(data.V.value) : -1,
       OG: data.OG.value ? Number(data.OG.value) : -1,
       FG: data.FG.value ? Number(data.FG.value) : -1,
-      E: data.E.value ? Number(data.E.value) : -1,
+      E: data.E?.value ? Number(data.E.value) : -1,
       EPM: data.EPM.value ? Number(data.EPM.value) : -1,
       ABV: data.ABV.value ? Number(data.ABV.value) : -1,
       rating: data.rating.value ? Number(data.rating.value) : 0,
