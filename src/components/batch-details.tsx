@@ -13,9 +13,10 @@ const BatchDetails = ({ reloadBatchList }) => {
   const [updateDisabled, setUpdateDisabled] = useState(true);
   const [formAction, setFormAction] = useState(null);
   const [batch, setBatchDetails] = useState<Batch | undefined>(undefined);
-  const { displayedId } = useContext(BatchContext);
+  const { displayedId, setDisplayedId } = useContext(BatchContext);
 
   useEffect(() => {
+    setBatchDetails(null);
     fetchSingleBatch(displayedId).then((batch) => setBatchDetails(batch));
     setFormAction("update");
     setUpdateDisabled(true);
@@ -166,7 +167,7 @@ const BatchDetails = ({ reloadBatchList }) => {
 
   // prettier-ignore
   const stats: (keyof Batch)[] = 
-    ["year", "month", "ABV", "IBU", "EBC", "V", "OG", "FG", "EPM", "E", "rating"];
+    ["year", "month", "ABV", "IBU", "EBC", "V", "OG", "FG", "EPM", "rating"]; // "E" excluded
   const renderStats = () => {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
@@ -267,6 +268,17 @@ const BatchDetails = ({ reloadBatchList }) => {
         </div>
         <div className="flex gap-4 flex pb-4">
           <button
+            title="Close batch details"
+            className="lg:hidden text-cyan-700 border-2 border-cyan-700 h-10 w-20
+              rounded-lg cursor-pointer transition transform duration-300 hover:scale-110
+              hover:bg-cyan-700 hover:text-white"
+            onClick={() => setDisplayedId(null)}
+          >
+            Close
+          </button>
+        </div>
+        <div className="flex gap-4 flex pb-4">
+          <button
             title="Add new batch"
             className="btn bg-emerald-700 disabled:bg-slate-500"
             onClick={handleAddButtonClick}
@@ -298,6 +310,7 @@ const BatchDetails = ({ reloadBatchList }) => {
   const renderBatch = () => {
     return (
       <div>
+        {renderButtons()}
         <span className="font-ph">
           Batch {getSlug(batch.year, batch.month, batch.name)}
         </span>
@@ -326,17 +339,26 @@ const BatchDetails = ({ reloadBatchList }) => {
   return (
     <div
       id="batch-details"
-      className="z-20 w-[100%] h-[100%] lg:w-[35.5vw] lg:h-[90%] lg:m-8 p-4 overflow-auto
+      className={`w-[100%] h-[100%] lg:w-[35.5vw] lg:h-[90%] lg:m-8 p-4 overflow-auto
        text-white fixed top-0 right-0 rounded-xl bg-cover bg-center bg-no-repeat 
-       shadow-[0px_0px_5px_#444] "
+       shadow-[0px_0px_5px_#444]       
+       ${displayedId ? "opacity-100 z-20" : "opacity-0 z-0"}`}
       style={{
         backgroundImage: `url("${batch?.img ? `data:image/*;base64,${batch.img}` : "default.jpg"}")`,
         backgroundColor: `rgb(50,50,50)`,
         backgroundBlendMode: "multiply",
       }}
     >
-      {renderButtons()}
-      {batch ? renderBatch() : <div className="font-ph">No Batch selected</div>}
+      {batch ? (
+        renderBatch()
+      ) : (
+        <div className="font-ph flex items-center justify-center h-full">
+          <div>
+            <div className="border-b-amber-500 border-5 border-gray-600 w-10 h-10 rounded-full animate-spin"></div>
+            Loading...
+          </div>
+        </div>
+      )}
     </div>
   );
 };

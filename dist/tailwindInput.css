@@ -59,4 +59,7 @@
   .font-ph {
     font-family: PH;
   }
+  body {
+    background: #111;
+  }
 }

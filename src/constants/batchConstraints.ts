@@ -15,7 +15,7 @@ export const numericConstraints: Record<
   FG: { min: 1.0, max: 1.2, step: 0.001 },
   rating: { min: 0, max: 5, step: 1 },
   EBC: { min: 0, max: 150, step: 1 },
-  V: { min: 0, step: 0.1 },
+  V: { min: 0, step: 0.01 },
   E: { min: 0, max: 100, step: 1 },
   EPM: { min: 0, max: 100, step: 0.1 },
 };

@@ -20,6 +20,7 @@ router.get("/beerBatches", async (req, res) => {
       IBU: 1,
       rating: 1,
       img: 1,
+      hops: 1,
     })
     .toArray();
   res.send({ beerBatches });

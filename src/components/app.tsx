@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import BatchList from "./batch-list";
 import BatchDetails from "./batch-details";
 import FilterMenu from "./filter-menu";
@@ -20,7 +20,7 @@ const App = ({ initialData }) => {
 
   return (
     <>
-      <div className="flex bg-gray-100 dark:bg-gray-900 p-8">
+      <div className="bg-gray-100 dark:bg-gray-900 p-8">
         <BatchContext.Provider
           value={{
             displayedId,
@@ -29,9 +29,16 @@ const App = ({ initialData }) => {
             setBeerBatchList,
           }}
         >
-          <FilterMenu />
-          <BatchList />
-          <BatchDetails reloadBatchList={reloadBatchList} />
+          <div className="w-full lg:w-[60%]">
+            <h1 className="font-pm text-6xl text-gray-800 dark:text-gray-300 text-center mb-4">
+              Brewing
+            </h1>
+            <FilterMenu />
+          </div>
+          <div className="flex ">
+            <BatchList />
+            <BatchDetails reloadBatchList={reloadBatchList} />
+          </div>
         </BatchContext.Provider>
       </div>
     </>
